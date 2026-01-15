@@ -207,10 +207,40 @@
 <body>
     <div class="container">
         <div class="no-print">
-            <div>
-                <strong>📄 Laporan Semua Siswa</strong>
-                <p style="font-size: 12px; color: #666; margin-top: 3px;">Tekan Ctrl+P untuk cetak atau save PDF</p>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <div>
+                    <strong>📄 Laporan Semua Siswa</strong>
+                    <p style="font-size: 12px; color: #666; margin-top: 3px;">Tekan Ctrl+P untuk cetak atau save PDF</p>
+                </div>
+
+                <form method="GET" action="{{ url('/reports/all/view') }}" style="display:flex; gap:8px; align-items:center;">
+                    @if(isset($classes) && $classes->count())
+                        <label style="font-weight:600; color:#666;">Filter Kelas:</label>
+                        <select name="class_id" style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
+                            <option value="">-- Semua Kelas --</option>
+                            @foreach($classes as $c)
+                                <option value="{{ $c->id }}" {{ (isset($classId) && $classId == $c->id) ? 'selected' : '' }}>{{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    @if(isset($subjects) && $subjects->count())
+                        <label style="font-weight:600; color:#666;">Mapel:</label>
+                        <select name="subject_id" style="padding:6px; border-radius:6px; border:1px solid #e5e7eb;">
+                            <option value="">-- Semua Mapel --</option>
+                            @foreach($subjects as $s)
+                                <option value="{{ $s->id }}" {{ (isset($subjectId) && $subjectId == $s->id) ? 'selected' : '' }}>{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    <button type="submit" class="print-btn" style="background:#4f46e5;">Terapkan</button>
+                    @if((isset($classId) && $classId) || (isset($subjectId) && $subjectId))
+                        <a href="{{ url('/reports/all/view') }}" class="print-btn" style="background:#6b7280;">Reset</a>
+                    @endif
+                </form>
             </div>
+
             <button class="print-btn" onclick="window.print()">🖨️ Cetak / Download PDF</button>
         </div>
 
@@ -227,7 +257,8 @@
                 $failCount = 0;
                 
                 foreach ($students as $student) {
-                    $avg = $student->grades->avg('grade') ?? 0;
+                    // PERBAIKAN: Menggunakan 'score' bukan 'grade'
+                    $avg = $student->grades->avg('score') ?? 0;
                     if ($avg >= 70) {
                         $passCount++;
                     } else {
@@ -268,7 +299,8 @@
                     <tbody>
                         @foreach($students as $index => $student)
                             @php
-                                $avgGrade = $student->grades->avg('grade') ?? 0;
+                                // PERBAIKAN: Menggunakan 'score' bukan 'grade'
+                                $avgGrade = $student->grades->avg('score') ?? 0;
                                 $status = $avgGrade >= 70 ? 'pass' : 'fail';
                                 $statusText = $avgGrade >= 70 ? 'Lulus' : 'Tidak Lulus';
                             @endphp
@@ -296,7 +328,11 @@
                 <ul style="margin-left: 20px; font-size: 12px; margin-top: 8px;">
                     <li>Rata-rata ≥ 70: <strong style="color: #155724;">LULUS</strong></li>
                     <li>Rata-rata < 70: <strong style="color: #721c24;">TIDAK LULUS</strong></li>
-                    <li>Laporan mencakup semua siswa dari seluruh kelas</li>
+                    @if(isset($classId) && $classId)
+                        <li>Laporan mencakup semua siswa dari kelas terpilih (termasuk yang belum ada nilai).</li>
+                    @else
+                        <li>Laporan mencakup semua siswa yang memiliki nilai.</li>
+                    @endif
                 </ul>
             </div>
 

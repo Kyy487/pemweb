@@ -70,15 +70,16 @@ class ReportController extends Controller
      */
     public function viewClassReport($classId)
     {
-        $studyClass = \App\Models\StudyClass::with(['students.grades', 'subjects', 'homeroomTeacher'])->findOrFail($classId);
-        
-        // Get grades per student
+        $studyClass = \App\Models\StudyClass::with(['students.grades.subject', 'subjects', 'homeroomTeacher'])->findOrFail($classId);
+
+        // Get grades per student and compute averages using 'score'
         $studentGrades = [];
         foreach ($studyClass->students as $student) {
+            $grades = $student->grades;
             $studentGrades[$student->id] = [
                 'student' => $student,
-                'grades' => $student->grades,
-                'avg' => $student->grades->avg('grade'),
+                'grades' => $grades,
+                'avg' => $grades->count() ? $grades->avg('score') : 0,
             ];
         }
 
@@ -91,12 +92,40 @@ class ReportController extends Controller
     /**
      * View all students report (for printing as PDF)
      */
-    public function viewAllReport()
+    public function viewAllReport(Request $request)
     {
-        $students = Student::with(['user', 'studyClass', 'grades'])->get();
+        $classId = $request->query('class_id');
+        $subjectId = $request->query('subject_id');
+
+        $q = Student::with(['user', 'studyClass', 'grades.subject', 'grades.teacher']);
+
+        if ($classId) {
+            // when filtering per class, include all students in that class (even without grades)
+            $q->where('study_class_id', $classId);
+        } else {
+            // default: only include students who have at least one grade so report matches Data Nilai
+            $q->whereHas('grades');
+        }
+
+        // If subject filter is provided and no class filter, restrict to students who have grade for that subject
+        if ($subjectId && !$classId) {
+            $q->whereHas('grades', function($qq) use ($subjectId) {
+                $qq->where('subject_id', $subjectId);
+            });
+        }
+
+        $students = $q->get();
+
+        // provide class and subject lists for filter
+        $classes = \App\Models\StudyClass::all();
+        $subjects = \App\Models\Subject::all();
 
         return view('reports.all-students-report', [
             'students' => $students,
+            'classes' => $classes,
+            'subjects' => $subjects,
+            'classId' => $classId,
+            'subjectId' => $subjectId,
         ]);
     }
 }

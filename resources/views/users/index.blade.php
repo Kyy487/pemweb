@@ -9,8 +9,29 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #333; }
-        .wrapper { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 0; position: fixed; height: 100vh; overflow-y: auto; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); }
+        
+        /* PERBAIKAN LAYOUT UTAMA */
+        .wrapper { 
+            position: relative;
+            min-height: 100vh;
+            /* display: flex; <- Dihapus agar tidak bentrok dengan fixed sidebar */
+        }
+
+        /* Sidebar Fixed */
+        .sidebar { 
+            width: 260px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 30px 0; 
+            position: fixed; 
+            top: 0;
+            left: 0;
+            height: 100vh; 
+            overflow-y: auto; 
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); 
+            z-index: 1000;
+        }
+
         .sidebar-header { padding: 0 20px 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
         .sidebar-logo { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
         .sidebar-subtitle { font-size: 12px; opacity: 0.8; }
@@ -20,34 +41,84 @@
         .sidebar-menu a:hover { background: rgba(255, 255, 255, 0.1); color: white; border-left-color: white; }
         .sidebar-menu a.active { background: rgba(255, 255, 255, 0.15); color: white; border-left-color: white; font-weight: 600; }
         .sidebar-menu i { font-size: 18px; width: 20px; }
-        .logout-btn { position: absolute; bottom: 20px; left: 20px; right: 20px; padding: 12px 15px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); color: white; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; font-family: 'Poppins', sans-serif; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .logout-btn { 
+            position: absolute; bottom: 20px; left: 20px; right: 20px; padding: 12px 15px; 
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3); 
+            color: white; border-radius: 8px; cursor: pointer; text-align: center; 
+            transition: all 0.3s; font-family: 'Poppins', sans-serif; font-weight: 600; 
+            text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; 
+        }
         .logout-btn:hover { background: rgba(255, 255, 255, 0.3); }
-        .main-content { margin-left: 260px; flex: 1; padding: 30px; }
-        .page-header { background: white; padding: 20px 30px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); gap: 20px; }
+
+        /* CONTENT AGAR FULL WIDTH DAN TENGAH */
+        .main-content { 
+            margin-left: 260px; 
+            padding: 30px; 
+            width: calc(100% - 260px); /* Memaksa lebar sisa layar */
+            min-height: 100vh;
+        }
+
+        .page-header { 
+            background: white; padding: 20px 30px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); gap: 20px; 
+        }
         .page-header h1 { font-size: 28px; color: #667eea; margin: 0; }
+        
         .btn { padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); color: white; }
         .btn-secondary { background: #f0f2ff; color: #667eea; border: 2px solid #667eea; padding: 8px 12px; font-size: 12px; gap: 4px; }
         .btn-secondary:hover { background: #667eea; color: white; }
         .btn-danger { background: #ef4444; padding: 8px 12px; font-size: 12px; gap: 4px; margin-left: 5px; }
         .btn-danger:hover { background: #dc2626; }
-        .content { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+        
+        .content { 
+            background: white; padding: 30px; border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); 
+            width: 100%; /* Pastikan kontainer tabel full */
+            overflow-x: auto;
+        }
+
         .alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+
+        /* PERBAIKAN TABEL AGAR RAPI DI TENGAH */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        table thead th { background: #f5f7fa; padding: 15px; text-align: left; font-weight: 600; color: #667eea; border-bottom: 2px solid #e8ecf4; }
-        table tbody td { padding: 15px; border-bottom: 1px solid #e8ecf4; }
+        
+        table thead th { 
+            background: #f5f7fa; padding: 15px; 
+            text-align: center; /* Judul kolom rata tengah */
+            font-weight: 600; color: #667eea; border-bottom: 2px solid #e8ecf4; 
+            white-space: nowrap;
+        }
+        table thead th:first-child { text-align: left; } /* Kolom nama tetap kiri */
+
+        table tbody td { 
+            padding: 15px; 
+            border-bottom: 1px solid #e8ecf4; 
+            vertical-align: middle;
+            text-align: center; /* Isi tabel rata tengah */
+        }
+        table tbody td:first-child { text-align: left; } /* Isi nama tetap kiri */
+
         table tbody tr:hover { background: #f9fafb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
-        .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        
+        .actions { 
+            display: flex; gap: 6px; align-items: center; flex-wrap: wrap; 
+            justify-content: center; /* Tombol aksi di tengah */
+        }
+        
         .btn-sm { padding: 8px 12px; font-size: 12px; white-space: nowrap; }
         .role-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .role-admin { background: #fee2e2; color: #991b1b; }
         .role-teacher { background: #dcfce7; color: #166534; }
         .role-student { background: #cffafe; color: #164e63; }
         .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+
         @media (max-width: 768px) { 
-            .sidebar { width: 0; } 
-            .main-content { margin-left: 0; padding: 15px; }
+            .sidebar { width: 0; padding: 0; overflow: hidden;} 
+            .main-content { margin-left: 0; padding: 15px; width: 100%; }
             .page-header { flex-direction: column; gap: 15px; align-items: flex-start; }
             table { font-size: 12px; }
             table th, table td { padding: 10px; }
@@ -57,7 +128,6 @@
 </head>
 <body>
     <div class="wrapper">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo"><i class="bi bi-mortarboard"></i> E-Rapor</div>
@@ -86,7 +156,6 @@
             </form>
         </div>
 
-        <!-- Main Content -->
         <div class="main-content">
             <div class="page-header">
                 <div>
@@ -97,8 +166,6 @@
                     <i class="bi bi-plus-circle"></i> Tambah Pengguna
                 </a>
             </div>
-
-</div>
 
             @if ($message = Session::get('success'))
                 <div class="alert alert-success">

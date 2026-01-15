@@ -8,19 +8,20 @@ use App\Models\User;
 use App\Models\StudyClass;
 use App\Models\Subject;
 use App\Models\Student;
+use App\Models\Grade;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         if (!Auth::check()) {
-            return redirect('/login');
+            return redirect('/login');  
         }
 
         $user = Auth::user();
 
+        // --- DASHBOARD ADMIN ---
         if ($user->role === 'admin') {
-            // ... (Kode Admin yang sudah kita buat) ...
             $data = [
                 'total_teachers' => User::where('role', 'teacher')->count(),
                 'total_students' => Student::count(),
@@ -29,33 +30,58 @@ class DashboardController extends Controller
             ];
             return view('dashboards.admin', $data);
 
+        // --- DASHBOARD GURU ---
         } elseif ($user->role === 'teacher') {
-            // ... (Kode Guru yang sudah kita buat) ...
-            $managedClass = StudyClass::where('homeroom_teacher_id', $user->id)->first();
-            $subjects = Subject::all(); 
             
+            // --- 1. AMBIL SEMUA KELAS (AGAR TABEL TIDAK KOSONG) ---
+            // Kita pakai all() supaya semua data di database muncul, tidak peduli siapa gurunya.
+            $managedClasses = StudyClass::all(); 
+
+            // Ambil kelas spesifik wali kelas (untuk keperluan display nama jika ada)
+            $managedClass = StudyClass::where('homeroom_teacher_id', $user->id)->first();
+            
+            // --- 2. STATISTIK ---
+            $subjectsCount = Grade::where('teacher_id', $user->id)->distinct('subject_id')->count('subject_id');
+            
+            // Ubah hitungan agar sesuai dengan tabel (Total semua kelas di sekolah)
+            $classesCount = StudyClass::count(); 
+            
+            $gradesCount = Grade::where('teacher_id', $user->id)->count();
+
+            // Hitung total siswa di database
+            $studentsCount = Student::count();
+
+            // --- 3. AMBIL DATA NILAI (5 TERBARU) ---
+            $recentGrades = Grade::with(['student.user', 'subject'])
+                                 ->where('teacher_id', $user->id)
+                                 ->latest()
+                                 ->take(5)
+                                 ->get();
+
+            // --- 4. KIRIM KE VIEW ---
             $data = [
                 'managedClass' => $managedClass,
-                'subjects' => $subjects,
+                'managedClasses' => $managedClasses, // <-- ISINYA PASTI ADA (3 KELAS)
+                'subjectsCount' => $subjectsCount,
+                'classesCount' => $classesCount,
+                'studentsCount' => $studentsCount,
+                'gradesCount' => $gradesCount,
+                'recentGrades' => $recentGrades,
             ];
-            
+
             return view('dashboards.teacher', $data);
 
-        } else { // Role = 'student' atau role tidak teridentifikasi
-            
-            // Logika Siswa
+        // --- DASHBOARD SISWA ---
+        } else { 
             $studentData = Student::with(['studyClass.homeroomTeacher', 'grades.subject'])
                                   ->where('user_id', $user->id)
                                   ->first();
             
-            // Jika data siswa tidak ditemukan (misal user dibuat manual tanpa data student), 
-            // set studentData menjadi null agar view bisa menampilkan pesan error
             if (!$studentData) {
-                // Return view student, tapi data akan kosong
                 return view('dashboards.student', ['studentData' => null]); 
             }
             
-            return view('dashboards.student', compact('studentData')); // <-- MEMANGGIL VIEW SISWA
+            return view('dashboards.student', compact('studentData'));
         }
     }
 }
