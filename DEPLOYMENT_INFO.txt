@@ -1,0 +1,47 @@
+DEPLOYMENT INFORMATION
+======================
+
+FILES TO UPLOAD (via FTP):
+- app\
+- bootstrap\
+- config\
+- database\
+- resources\
+- routes\
+- storage\
+- vendor\
+- public\
+- .env (Production values)
+- .htaccess
+- composer.json
+- composer.lock
+- artisan
+- server.php
+
+FILES TO EXCLUDE:
+- node_modules\ (already built)
+- tests\
+- .git\
+- .github\
+
+PERMISSIONS TO SET (via FTP):
+- storage\ -> 755
+- bootstrap\cache\ -> 755
+
+DATABASE:
+- Create MySQL database in Infinity Free panel
+- Create database user
+- Run: php artisan migrate --force
+
+AFTER UPLOAD:
+1. Verify .env is correct
+2. Run migrations
+3. Test homepage loads
+4. Check storage\logs\laravel.log for errors
+5. Test database connection
+
+REFERENCE GUIDES:
+- INFINITY_FREE_SETUP.md
+- INFINITY_FREE_DEPLOYMENT_GUIDE.md
+- INFINITY_FREE_TROUBLESHOOTING.md
+- INFINITY_FREE_QUICK_REF.md

@@ -241,7 +241,23 @@
             background: #dc2626;
         }
 
-        /* Responsive */
+        /* Alert Box Baru (Untuk Data Kosong) */
+        .alert-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        .alert-box i {
+            font-size: 40px;
+            color: #f59e0b;
+            margin-bottom: 10px;
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .top-bar {
                 flex-direction: column;
@@ -256,7 +272,8 @@
                 font-size: 12px;
             }
 
-            table th, table td {
+            table th,
+            table td {
                 padding: 10px;
             }
         }
@@ -264,7 +281,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Top Bar -->
         <div class="top-bar">
             <h1>Dashboard Siswa</h1>
             <div class="user-info">
@@ -276,93 +292,99 @@
             </div>
         </div>
 
-        <!-- Student Info Card -->
-        <div class="info-card">
-            <div class="section-title">
-                <i class="bi bi-person-circle"></i> Informasi Siswa
-            </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <h4>Nama Lengkap</h4>
-                    <p>{{ Auth::user()->name }}</p>
-                </div>
-                <div class="info-item">
-                    <h4>Nomor Induk</h4>
-                    <p>{{ $studentData->nisn ?? '-' }}</p>
-                </div>
-                <div class="info-item">
-                    <h4>Kelas</h4>
-                    <p>{{ $studentData->studyClass->name ?? '-' }}</p>
-                </div>
-                <div class="info-item">
-                    <h4>Wali Kelas</h4>
-                    <p>{{ $studentData->studyClass->homeroomTeacher->name ?? '-' }}</p>
-                </div>
-            </div>
-        </div>
+        @if(isset($studentData) && $studentData)
 
-        <!-- Grade Summary Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4>Rata-rata Nilai</h4>
-                <p>{{ $studentData->grades->count() > 0 ? number_format($studentData->grades->avg('score'), 1) : '0' }}</p>
+            <div class="info-card">
+                <div class="section-title">
+                    <i class="bi bi-person-circle"></i> Informasi Siswa
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <h4>Nama Lengkap</h4>
+                        <p>{{ Auth::user()->name }}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Nomor Induk</h4>
+                        <p>{{ $studentData->nisn ?? '-' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Kelas</h4>
+                        <p>{{ $studentData->studyClass->name ?? '-' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <h4>Wali Kelas</h4>
+                        <p>{{ $studentData->studyClass->homeroomTeacher->name ?? '-' }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <h4>Total Mata Pelajaran</h4>
-                <p>{{ $studentData->grades->count() }}</p>
-            </div>
-            <div class="stat-card">
-                <h4>Status</h4>
-                <p>{{ $studentData->grades->count() > 0 && $studentData->grades->where('score', '>=', 70)->count() === $studentData->grades->count() ? 'Lulus ✓' : ($studentData->grades->count() > 0 ? 'Belum Lulus' : '-') }}</p>
-            </div>
-            <div class="stat-card">
-                <h4>Lulus</h4>
-                <p>{{ $studentData->grades->where('score', '>=', 70)->count() }}/{{ $studentData->grades->count() }}</p>
-            </div>
-        </div>
 
-        <!-- Grades Section -->
-        <div class="grades-section">
-            <div class="section-title">
-                <i class="bi bi-file-earmark-text"></i> Nilai Mata Pelajaran
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Rata-rata Nilai</h4>
+                    <p>{{ $studentData->grades->count() > 0 ? number_format($studentData->grades->avg('score'), 1) : '0' }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Mata Pelajaran</h4>
+                    <p>{{ $studentData->grades->count() }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Status</h4>
+                    <p>{{ $studentData->grades->count() > 0 && $studentData->grades->where('score', '>=', 70)->count() === $studentData->grades->count() ? 'Lulus ✓' : ($studentData->grades->count() > 0 ? 'Belum Lulus' : '-') }}</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Lulus</h4>
+                    <p>{{ $studentData->grades->where('score', '>=', 70)->count() }}/{{ $studentData->grades->count() }}</p>
+                </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mata Pelajaran</th>
-                        <th>Guru</th>
-                        <th>Nilai</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($studentData->grades as $grade)
+
+            <div class="grades-section">
+                <div class="section-title">
+                    <i class="bi bi-file-earmark-text"></i> Nilai Mata Pelajaran
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mata Pelajaran</th>
+                            <th>Guru</th>
+                            <th>Nilai</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($studentData->grades as $grade)
                         <tr>
                             <td>{{ $grade->subject->name ?? '-' }}</td>
                             <td>{{ $grade->teacher->name ?? '-' }}</td>
                             <td><span class="grade-value {{ $grade->score >= 70 ? 'grade-pass' : 'grade-fail' }}">{{ $grade->score }}</span></td>
                             <td>{{ $grade->score >= 70 ? 'Lulus' : 'Tidak Lulus' }}</td>
                         </tr>
-                    @empty
+                        @empty
                         <tr>
                             <td colspan="4" style="text-align: center; color: #999; padding: 30px;">Belum ada nilai.</td>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        @endforelse
+                    </tbody>
+                </table>
 
-            <!-- Download Rapor -->
-            <div class="action-buttons">
-                <a href="/reports/student/view" class="action-btn">
-                    <i class="bi bi-download"></i> Download Rapor
-                </a>
-                <a href="/reports/student/view" class="action-btn">
-                    <i class="bi bi-printer"></i> Cetak Rapor
-                </a>
+                <div class="action-buttons">
+                    <a href="/reports/student/view" class="action-btn">
+                        <i class="bi bi-download"></i> Download Rapor
+                    </a>
+                    <a href="/reports/student/view" class="action-btn">
+                        <i class="bi bi-printer"></i> Cetak Rapor
+                    </a>
+                </div>
             </div>
-        </div>
+        
+        @else
+            <div class="alert-box">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <h3>Data Siswa Belum Terhubung</h3>
+                <p>Akun Anda aktif, tetapi belum terhubung dengan data siswa di database.</p>
+                <p>Silakan hubungi Admin atau Guru Wali Kelas untuk mendaftarkan data siswa Anda.</p>
+            </div>
+        @endif
 
-        <!-- Logout -->
         <div style="margin-top: 30px;">
             <form method="POST" action="/logout">
                 @csrf
@@ -374,7 +396,3 @@
     </div>
 </body>
 </html>
-    </style>
-</head>
-<body>
-    <div class="container">
